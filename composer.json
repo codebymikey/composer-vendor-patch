@@ -1,0 +1,34 @@
+{
+  "name": "codebymikey/composer-vendor-patch",
+  "description": "Provides a Composer plugin to generate patches based on local changes to a vendor package.",
+  "type": "composer-plugin",
+   "extra": {
+    "class": "Codebymikey\\ComposerVendorPatch\\Plugin\\GenerateVendorPatches"
+  },
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Codebymikey\\ComposerVendorPatch\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Codebymikey\\ComposerVendorPatchTest\\": "tests"
+    }
+  },
+  "authors": [
+    {
+      "name": "codebymikey",
+      "email": "codebymikey@gmail.com"
+    }
+  ],
+  "require": {
+    "composer-plugin-api": "^2.0",
+    "symfony/process": "^5.0 || ^6.0"
+  },
+  "require-dev": {
+    "composer/composer": "^2.8",
+    "mikey179/vfsstream": "^1.6",
+    "phpunit/phpunit": "^12.4"
+  }
+}
