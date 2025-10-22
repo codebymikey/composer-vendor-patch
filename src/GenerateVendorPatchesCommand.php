@@ -137,8 +137,6 @@ class GenerateVendorPatchesCommand extends BaseCommand {
 
   protected function runPackageDiff($pristinePath, $installPath, array $excludePatterns) {
     $differ = NULL;
-    $output = NULL;
-    $callback = NULL;
 
     $finder = new ExecutableFinder();
     // Using 'diff' isn't as good as 'git diff' especially for binaries.
@@ -192,29 +190,23 @@ class GenerateVendorPatchesCommand extends BaseCommand {
 
     $escapedPristinePath = preg_quote($pristinePath, '/');
     $escapedInstallPath = preg_quote($installPath, '/');
-    $output = '';
-    // Convert the output to a git diff like format.
-    // The alternative is to symlink a and b, then diff that directory.
-    $callback = function ($type, $data) use (&$output, $differ, $escapedPristinePath, $escapedInstallPath) {
-      if ($type === Process::OUT) {
-        if ($differ === 'diff') {
-          $data = preg_replace('/^diff .*?--ignore-trailing-space/m', 'diff --git', $data);
-          // Remove the timestamp.
-          $data = preg_replace("{^(\+\+\+.+|---.+)\t.*}m", '\\1', $data);
-        }
-
-        // Make the files path-relative.
-        $data = preg_replace("{^(---\s+|diff.+?)(a?)($escapedPristinePath|$escapedInstallPath)}m", '\\1a', $data);
-        $data = preg_replace("{^(\+\+\+\s+|diff.+?)(b?)($escapedInstallPath|$escapedInstallPath)}m", '\\1b', $data);
-
-        $output .= $data;
-      }
-    };
 
     $process = new Process($command);
-    $process->run($callback);
+    $process->run();
 
-    $output = $output ?? $process->getOutput();
+    $output = $process->getOutput();
+
+    // Convert the output to a git diff like format.
+    // The alternative is to symlink a and b, then diff that directory.
+    if ($differ === 'diff') {
+      $output = preg_replace('/^diff .*?--ignore-trailing-space/m', 'diff --git', $output);
+      // Remove the timestamp.
+      $output = preg_replace("{^(\+\+\+.+|---.+)\t.*}m", '$1', $output);
+    }
+
+    // Make the files path-relative.
+    $output = preg_replace("{^(---\s+|diff.+?)(a?)($escapedPristinePath|$escapedInstallPath)}m", '$1a', $output);
+    $output = preg_replace("{^(\+\+\+\s+|diff.+?)(b?)($escapedInstallPath|$escapedInstallPath)}m", '$1b', $output);
 
     return [$process, $output];
   }
